@@ -33,12 +33,40 @@ TEST(Header, init) {
   EXPECT_EQ(4, header2.messageSize()) ;
 }
 
-TEST(Header, packParse) {
+TEST(Header, stringPackParse) {
   Header header(1,2,3,4) ;
   std::string info = header.packToString() ;
 
   Header header2 ;
   bool ok = header2.parseFromString(info) ;
+  EXPECT_EQ(true, ok) ;
+  EXPECT_TRUE(header == header2) ;
+}
+
+TEST(Header, voidPackParse) {
+  char data[Header::size()] ;
+
+  Header header(1,2,3,4) ;
+  bool ok = header.appendFullData(data, Header::size()) ;
+
+  EXPECT_EQ(true, ok);
+  EXPECT_EQ(false, header.isShort()) ;
+
+  Header header2 ;
+  ok = header2.parseFullFromData(data, Header::size()) ;
+  EXPECT_EQ(true, ok) ;
+  EXPECT_TRUE(header == header2) ;
+
+  header.setShort() ;
+  EXPECT_EQ(0, header.group()) ;
+  EXPECT_EQ(0, header.id()) ;
+  EXPECT_EQ(3, header.type()) ;
+  EXPECT_EQ(4, header.messageSize()) ;
+  EXPECT_EQ(true, header.isShort()) ;
+
+  ok = header.appendShortData(data, Header::shortSize()) ;
+  EXPECT_EQ(true, ok) ;
+  ok = header2.parseShortFromData(data, Header::shortSize()) ;
   EXPECT_EQ(true, ok) ;
   EXPECT_TRUE(header == header2) ;
 }
